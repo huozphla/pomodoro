@@ -222,8 +222,8 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     /* ========== 计时器圆形区域 ========== */
     .timer-section {
       position: relative;
-      width: min(calc(17.5 * var(--font-size)), 88vmin);
-      height: min(calc(17.5 * var(--font-size)), 88vmin);
+      width: min(calc(22 * var(--font-size)), 88vmin);
+      height: min(calc(22 * var(--font-size)), 88vmin);
       flex-shrink: 0;
     }
     .timer-section canvas {
@@ -247,7 +247,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       align-items: center;
       justify-content: center;
       gap: 0.12em;
-      font-size: clamp(2.3rem, 10vmin, 4.5rem);
+      font-size: clamp(2.3rem, 10vmin, 3.5rem);
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       font-family: var(--font-family);
@@ -383,35 +383,41 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     .controls {
       display: flex;
       align-items: center;
-      gap: 20px;
+      width: 100%;
     }
     .btn-start {
-      width: clamp(60px, 14vmin, 84px); height: clamp(60px, 14vmin, 84px);
+      width: clamp(7rem, 25vmin, 9rem); height: clamp(7rem, 25vmin, 9rem);
+      line-height: clamp(7rem, 25vmin, 9rem);
       border-radius: 50%;
       border: none;
       background: var(--btn-active-bg);
       color: var(--btn-active-text);
-      font-size: clamp(0.9rem, 2.5vmin, 1.3rem);
+      font-size: clamp(1rem, 2.8vmin, 1.4rem);
       font-weight: 700;
       cursor: pointer;
       box-shadow: var(--shadow-lg);
       transition: all 0.3s ease;
       touch-action: manipulation;
-      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 0;
     }
     .btn-start:active { transform: scale(0.9); }
     .btn-start.paused { background: var(--accent-dark); }
     .btn-reset {
-      width: clamp(42px, 9vmin, 56px); height: clamp(42px, 9vmin, 56px);
+      width: clamp(2.8rem, 10vmin, 3.8rem); height: clamp(2.8rem, 10vmin, 3.8rem);
       border-radius: 50%;
       border: 2px solid var(--border);
       background: var(--btn-bg);
       color: var(--text-secondary);
-      font-size: clamp(0.7rem, 1.8vmin, 0.95rem);
+      font-size: clamp(0.8rem, 2vmin, 1rem);
       cursor: pointer;
       transition: all 0.3s ease;
       touch-action: manipulation;
       display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-right: clamp(3rem, 8vmin, 5rem);
     }
     .btn-reset:active { transform: scale(0.9); background: var(--border); }
 
@@ -425,7 +431,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
 
     /* ========== 设置面板 ========== */
     .settings-toggle {
-      width: clamp(40px, 9vmin, 52px); height: clamp(40px, 9vmin, 52px);
+      width: clamp(2.7rem, 10vmin, 3.5rem); height: clamp(2.7rem, 10vmin, 3.5rem);
       border-radius: 50%;
       border: none;
       background: var(--btn-bg);
@@ -436,6 +442,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       touch-action: manipulation;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
+      margin-left: auto;
     }
     .settings-toggle:active { transform: rotate(60deg); }
 
@@ -584,8 +591,8 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
         gap: clamp(0.75rem, 3vmin, 1.75rem);
       }
       .timer-section {
-        width: min(calc(15 * var(--font-size)), 65vmin);
-        height: min(calc(15 * var(--font-size)), 65vmin);
+        width: min(calc(20 * var(--font-size)), 65vmin);
+        height: min(calc(20 * var(--font-size)), 65vmin);
       }
       .mode-selector {
         max-width: 22rem;
@@ -611,8 +618,8 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
         padding: clamp(0.75rem, 3vmin, 1.5rem);
       }
       .timer-section {
-        width: min(calc(15 * var(--font-size)), 55vmin);
-        height: min(calc(15 * var(--font-size)), 55vmin);
+        width: min(calc(22 * var(--font-size)), 55vmin);
+        height: min(calc(22 * var(--font-size)), 55vmin);
       }
       .header {
         width: 100%;
@@ -1821,6 +1828,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     settingsPanel.classList.toggle('open');
     if (settingsPanel.classList.contains('open')) {
       refreshSettingsUI();
+      settingsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   });
 
