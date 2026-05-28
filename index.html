@@ -379,11 +379,14 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       font-weight: 700;
     }
 
-    /* ========== 控制按钮 ========== */
-    .controls {
-      display: flex;
-      align-items: center;
+    /* ========== 开始按钮（环正下方） ========== */
+    .start-btn-wrapper {
       width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: calc(-0.8 * var(--font-size));
+      position: relative;
+      z-index: 1;
     }
     .btn-start {
       width: clamp(7.5rem, 26vmin, 9.5rem); height: clamp(7.5rem, 26vmin, 9.5rem);
@@ -407,6 +410,14 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     }
     .btn-start:active { transform: scale(0.9); }
     .btn-start.paused { background: var(--accent-dark); }
+
+    /* ========== 控制按钮（重置和设置） ========== */
+    .controls {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      justify-content: space-between;
+    }
     .btn-reset {
       width: clamp(2.8rem, 10vmin, 3.8rem); height: clamp(2.8rem, 10vmin, 3.8rem);
       border-radius: 50%;
@@ -419,7 +430,6 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       touch-action: manipulation;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      margin-right: clamp(3rem, 8vmin, 5rem);
     }
     .btn-reset:active { transform: scale(0.9); background: var(--border); }
 
@@ -444,7 +454,6 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       touch-action: manipulation;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      margin-left: auto;
     }
     .settings-toggle:active { transform: rotate(60deg); }
 
@@ -667,13 +676,17 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       </div>
     </div>
 
+    <!-- 开始按钮 - 始终在环正下方 -->
+    <div class="start-btn-wrapper">
+      <button class="btn-start" id="btnStart" title="开始">▶ 开始</button>
+    </div>
+
     <!-- 模式选择器 -->
     <div class="mode-selector" id="modeSelector"></div>
 
-    <!-- 控制按钮 -->
+    <!-- 控制按钮（重置和设置） -->
     <div class="controls">
       <button class="btn-reset" id="btnReset" title="重置">↺</button>
-      <button class="btn-start" id="btnStart" title="开始">▶ 开始</button>
       <button class="settings-toggle" id="btnSettings" title="设置">⚙</button>
     </div>
 
