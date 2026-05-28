@@ -222,8 +222,8 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     /* ========== 计时器圆形区域 ========== */
     .timer-section {
       position: relative;
-      width: min(calc(22 * var(--font-size)), 88vmin);
-      height: min(calc(22 * var(--font-size)), 88vmin);
+      width: min(calc(26 * var(--font-size)), 88vmin);
+      height: min(calc(26 * var(--font-size)), 88vmin);
       flex-shrink: 0;
     }
     .timer-section canvas {
@@ -247,7 +247,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       align-items: center;
       justify-content: center;
       gap: 0.12em;
-      font-size: clamp(2.3rem, 10vmin, 3.5rem);
+      font-size: clamp(2rem, 10vmin, 3rem);
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       font-family: var(--font-family);
@@ -386,8 +386,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       width: 100%;
     }
     .btn-start {
-      width: clamp(7rem, 25vmin, 9rem); height: clamp(7rem, 25vmin, 9rem);
-      line-height: clamp(7rem, 25vmin, 9rem);
+      width: clamp(7.5rem, 26vmin, 9.5rem); height: clamp(7.5rem, 26vmin, 9.5rem);
       border-radius: 50%;
       border: none;
       background: var(--btn-active-bg);
@@ -398,10 +397,13 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       box-shadow: var(--shadow-lg);
       transition: all 0.3s ease;
       touch-action: manipulation;
-      text-align: center;
+      display: flex; align-items: center; justify-content: center;
       white-space: nowrap;
       flex-shrink: 0;
       padding: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      overflow: hidden;
     }
     .btn-start:active { transform: scale(0.9); }
     .btn-start.paused { background: var(--accent-dark); }
@@ -591,8 +593,8 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
         gap: clamp(0.75rem, 3vmin, 1.75rem);
       }
       .timer-section {
-        width: min(calc(20 * var(--font-size)), 65vmin);
-        height: min(calc(20 * var(--font-size)), 65vmin);
+        width: min(calc(24 * var(--font-size)), 65vmin);
+        height: min(calc(24 * var(--font-size)), 65vmin);
       }
       .mode-selector {
         max-width: 22rem;
@@ -618,8 +620,8 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
         padding: clamp(0.75rem, 3vmin, 1.5rem);
       }
       .timer-section {
-        width: min(calc(22 * var(--font-size)), 55vmin);
-        height: min(calc(22 * var(--font-size)), 55vmin);
+        width: min(calc(26 * var(--font-size)), 55vmin);
+        height: min(calc(26 * var(--font-size)), 55vmin);
       }
       .header {
         width: 100%;
@@ -1529,10 +1531,10 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
 
   function updateBtnState() {
     if (state.isRunning) {
-      btnStart.textContent = '⏸ 暂停';
+      btnStart.innerHTML = '⏸&nbsp;暂停';
       btnStart.classList.add('paused');
     } else {
-      btnStart.textContent = '▶ 开始';
+      btnStart.innerHTML = '▶&nbsp;开始';
       btnStart.classList.remove('paused');
     }
     updateDigitInteractivity();
