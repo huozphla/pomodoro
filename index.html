@@ -379,22 +379,38 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       font-weight: 700;
     }
 
-    /* ========== 开始按钮（环正下方） ========== */
-    .start-btn-wrapper {
+    /* ========== 控制按钮 ========== */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
       width: 100%;
-      display: flex;
-      justify-content: center;
-      margin-top: calc(-0.8 * var(--font-size));
-      position: relative;
-      z-index: 1;
     }
+    .btn-reset {
+      grid-column: 1;
+      justify-self: start;
+      width: clamp(2.8rem, 10vmin, 3.8rem); height: clamp(2.8rem, 10vmin, 3.8rem);
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--btn-bg);
+      color: var(--text-secondary);
+      font-size: clamp(0.8rem, 2vmin, 1rem);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .btn-reset:active { transform: scale(0.9); background: var(--border); }
     .btn-start {
-      width: clamp(7.5rem, 26vmin, 9.5rem); height: clamp(7.5rem, 26vmin, 9.5rem);
+      grid-column: 2;
+      justify-self: center;
+      width: clamp(5rem, 16vmin, 6.5rem); height: clamp(5rem, 16vmin, 6.5rem);
       border-radius: 50%;
       border: none;
       background: var(--btn-active-bg);
       color: var(--btn-active-text);
-      font-size: clamp(1rem, 2.8vmin, 1.4rem);
+      font-size: clamp(0.9rem, 2.4vmin, 1.2rem);
       font-weight: 700;
       cursor: pointer;
       box-shadow: var(--shadow-lg);
@@ -410,39 +426,9 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     }
     .btn-start:active { transform: scale(0.9); }
     .btn-start.paused { background: var(--accent-dark); }
-
-    /* ========== 控制按钮（重置和设置） ========== */
-    .controls {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      justify-content: space-between;
-    }
-    .btn-reset {
-      width: clamp(2.8rem, 10vmin, 3.8rem); height: clamp(2.8rem, 10vmin, 3.8rem);
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      background: var(--btn-bg);
-      color: var(--text-secondary);
-      font-size: clamp(0.8rem, 2vmin, 1rem);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      touch-action: manipulation;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .btn-reset:active { transform: scale(0.9); background: var(--border); }
-
-    /* ========== 完成计数 ========== */
-    .completion-counter {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      text-align: center;
-    }
-    .completion-counter strong { color: var(--accent); font-size: 1.1rem; }
-
-    /* ========== 设置面板 ========== */
     .settings-toggle {
+      grid-column: 3;
+      justify-self: end;
       width: clamp(2.7rem, 10vmin, 3.5rem); height: clamp(2.7rem, 10vmin, 3.5rem);
       border-radius: 50%;
       border: none;
@@ -676,17 +662,13 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       </div>
     </div>
 
-    <!-- 开始按钮 - 始终在环正下方 -->
-    <div class="start-btn-wrapper">
-      <button class="btn-start" id="btnStart" title="开始">▶ 开始</button>
-    </div>
-
     <!-- 模式选择器 -->
     <div class="mode-selector" id="modeSelector"></div>
 
-    <!-- 控制按钮（重置和设置） -->
+    <!-- 控制按钮 -->
     <div class="controls">
       <button class="btn-reset" id="btnReset" title="重置">↺</button>
+      <button class="btn-start" id="btnStart" title="开始">▶ 开始</button>
       <button class="settings-toggle" id="btnSettings" title="设置">⚙</button>
     </div>
 
