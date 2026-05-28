@@ -277,10 +277,18 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     .digit-col::before {
       top: 0;
       background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.25s ease;
     }
     .digit-col::after {
       bottom: 0;
       background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .digit-col.scrolling::before,
+    .digit-col.scrolling::after {
+      opacity: 1;
     }
     /* 当前数字高亮线 */
     .digit-col .highlight-line {
@@ -307,15 +315,17 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       align-items: center;
       justify-content: center;
       color: var(--text);
-      opacity: 0.25;
+      opacity: 0;
       font-weight: 400;
+      transition: opacity 0.2s ease;
     }
     .digit-item.active {
       opacity: 1;
       font-weight: 700;
     }
-    .digit-item.near {
-      opacity: 0.55;
+    /* 仅在滑动时显示相邻预览数字 */
+    .digit-col.scrolling .digit-item.near {
+      opacity: 0.45;
     }
     /* 冒号分隔符 */
     .digit-colon {
@@ -1217,6 +1227,10 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
 
     const strip = col.querySelector('.digit-strip');
     strip.classList.add('dragging');
+    col.classList.add('scrolling');
+
+    // 刷新当前列使 near 类生效
+    _refreshColumnClasses(col);
   }
 
   function onDigitTouchMove(e) {
@@ -1232,6 +1246,9 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
 
     const strip = col.querySelector('.digit-strip');
     _positionStrip(strip, col._dragStartIdx, offsetEm);
+
+    // 根据滑动偏移更新 near 状态
+    _refreshColumnNear(col, offsetEm);
   }
 
   function onDigitTouchEnd(e) {
@@ -1240,6 +1257,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
 
     const strip = col.querySelector('.digit-strip');
     strip.classList.remove('dragging');
+    col.classList.remove('scrolling');
     col._dragging = false;
 
     const emSize = wheelEmSize();
@@ -1265,7 +1283,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     const maxSec = mode.maxMin > 0 ? mode.maxMin * 60 : 10800;
     if (newTotal >= minSec && newTotal <= maxSec) {
       state.remainingSeconds = newTotal;
-      state.totalSeconds = Math.max(state.totalSeconds, state.remainingSeconds);
+      state.totalSeconds = state.remainingSeconds;
     }
 
     // 刷新显示
@@ -1281,6 +1299,34 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     const cfg = DIGIT_CONFIGS[pos];
     const idx = cfg.values.indexOf(val);
     return idx >= 0 ? idx : 0;
+  }
+
+  // 刷新列的 active/near 状态（非拖拽时使用）
+  function _refreshColumnClasses(col) {
+    const idx = _currentDigitIdx(col);
+    const items = col.querySelectorAll('.digit-item');
+    items.forEach((item, i) => {
+      item.classList.remove('active', 'near');
+      if (i === idx) item.classList.add('active');
+      else if (Math.abs(i - idx) === 1) item.classList.add('near');
+    });
+  }
+
+  // 拖拽中根据偏移量动态更新 active/near（floatIdx 决定预览位置）
+  function _refreshColumnNear(col, offsetEm) {
+    const floatIdx = col._dragStartIdx - offsetEm / 0.8;
+    const snapIdx = Math.round(floatIdx);
+    const cfg = DIGIT_CONFIGS[parseInt(col.dataset.pos)];
+    const clampedSnap = Math.max(0, Math.min(cfg.values.length - 1, snapIdx));
+    const items = col.querySelectorAll('.digit-item');
+    items.forEach((item, i) => {
+      item.classList.remove('active', 'near');
+      if (i === clampedSnap) {
+        item.classList.add('active');
+      } else if (Math.abs(i - floatIdx) < 1.3) {
+        item.classList.add('near');
+      }
+    });
   }
 
   function updateDisplay() {
@@ -1610,7 +1656,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       // 顺时针：增加时间
       if (state.remainingSeconds / 60 < mode.maxMin) {
         state.remainingSeconds += 60;
-        state.totalSeconds = Math.max(state.totalSeconds, state.remainingSeconds);
+        state.totalSeconds = state.remainingSeconds;
       }
     }
     while (accumulatedAngle <= -ANGLE_THRESHOLD) {
@@ -1672,7 +1718,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
         // 向上滑动：增加时间
         if (state.remainingSeconds / 60 < mode.maxMin) {
           state.remainingSeconds = Math.min(state.remainingSeconds + adjustment * 60, mode.maxMin * 60);
-          state.totalSeconds = Math.max(state.totalSeconds, state.remainingSeconds);
+          state.totalSeconds = state.remainingSeconds;
         }
       } else {
         // 向下滑动：减少时间
