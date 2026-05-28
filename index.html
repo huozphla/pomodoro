@@ -146,9 +146,10 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       min-height: 100dvh;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
+      align-items: center;
       transition: background 0.4s ease, color 0.4s ease;
       overflow-x: hidden;
+      overflow-y: auto;
     }
 
     /* 深色模式自动适配 */
@@ -168,14 +169,15 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     /* ========== 主容器 ========== */
     .app-container {
       width: 100%;
-      max-width: 480px;
+      max-width: 100%;
       min-height: 100vh;
       min-height: 100dvh;
-      padding: 16px 20px 32px;
+      padding: clamp(8px, 2vmin, 24px);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      justify-content: center;
+      gap: clamp(8px, 1.5vh, 20px);
     }
 
     /* ========== 永久链接栏 ========== */
@@ -206,13 +208,13 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       width: 100%;
     }
     .header h1 {
-      font-size: 1.4rem;
+      font-size: clamp(1.1rem, 3vmin, 1.6rem);
       font-weight: 700;
       letter-spacing: 0.02em;
       color: var(--text);
     }
     .header .subtitle {
-      font-size: 0.7rem;
+      font-size: clamp(0.6rem, 1.5vmin, 0.8rem);
       color: var(--text-secondary);
       margin-top: 2px;
     }
@@ -220,13 +222,13 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     /* ========== 计时器圆形区域 ========== */
     .timer-section {
       position: relative;
-      width: 280px;
-      height: 280px;
+      width: min(75vmin, 420px);
+      height: min(75vmin, 420px);
       flex-shrink: 0;
     }
     .timer-section canvas {
-      width: 280px;
-      height: 280px;
+      width: 100%;
+      height: 100%;
       display: block;
     }
     .timer-display {
@@ -245,7 +247,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       align-items: center;
       justify-content: center;
       gap: 2px;
-      font-size: 2.8rem;
+      font-size: clamp(1.8rem, 8vmin, 3.8rem);
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       font-family: var(--font-family);
@@ -365,15 +367,15 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     }
     .mode-btn {
       position: relative;
-      padding: 10px 6px;
-      border-radius: 14px;
+      padding: clamp(6px, 1vh, 12px) clamp(4px, 1vw, 8px);
+      border-radius: clamp(10px, 2vmin, 14px);
       border: 2px solid transparent;
       background: var(--mode-btn-bg);
       color: var(--text);
-      font-size: 0.8rem;
+      font-size: clamp(0.65rem, 1.8vmin, 0.9rem);
       font-weight: 500;
       cursor: pointer;
-      min-height: 48px;
+      min-height: clamp(42px, 6vh, 56px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -400,12 +402,12 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       gap: 20px;
     }
     .btn-start {
-      width: 72px; height: 72px;
+      width: clamp(60px, 14vmin, 84px); height: clamp(60px, 14vmin, 84px);
       border-radius: 50%;
       border: none;
       background: var(--btn-active-bg);
       color: var(--btn-active-text);
-      font-size: 1.1rem;
+      font-size: clamp(0.9rem, 2.5vmin, 1.3rem);
       font-weight: 700;
       cursor: pointer;
       box-shadow: var(--shadow-lg);
@@ -416,12 +418,12 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     .btn-start:active { transform: scale(0.9); }
     .btn-start.paused { background: var(--accent-dark); }
     .btn-reset {
-      width: 48px; height: 48px;
+      width: clamp(42px, 9vmin, 56px); height: clamp(42px, 9vmin, 56px);
       border-radius: 50%;
       border: 2px solid var(--border);
       background: var(--btn-bg);
       color: var(--text-secondary);
-      font-size: 0.85rem;
+      font-size: clamp(0.7rem, 1.8vmin, 0.95rem);
       cursor: pointer;
       transition: all 0.3s ease;
       touch-action: manipulation;
@@ -439,12 +441,12 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
 
     /* ========== 设置面板 ========== */
     .settings-toggle {
-      width: 44px; height: 44px;
+      width: clamp(40px, 9vmin, 52px); height: clamp(40px, 9vmin, 52px);
       border-radius: 50%;
       border: none;
       background: var(--btn-bg);
       color: var(--text-secondary);
-      font-size: 1.2rem;
+      font-size: clamp(1rem, 2.5vmin, 1.4rem);
       cursor: pointer;
       transition: all 0.3s ease;
       touch-action: manipulation;
@@ -588,13 +590,62 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     .deploy-guide.show { display: block; }
     .deploy-guide strong { color: var(--accent); }
 
-    /* ========== 响应式微调 ========== */
+    /* ========== 响应式：平板横屏（宽 > 高） ========== */
+    @media (min-width: 600px) and (orientation: landscape) {
+      .app-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: clamp(12px, 3vmin, 28px);
+      }
+      .timer-section {
+        width: min(60vmin, 380px);
+        height: min(60vmin, 380px);
+      }
+      .mode-selector {
+        max-width: 340px;
+      }
+    }
+
+    /* ========== 响应式：平板竖屏 ========== */
+    @media (min-width: 600px) and (orientation: portrait) {
+      .app-container {
+        gap: clamp(14px, 2.5vh, 28px);
+      }
+    }
+
+    /* ========== 响应式：桌面大屏 ========== */
+    @media (min-width: 1024px) {
+      .app-container {
+        max-width: 1000px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: clamp(20px, 4vmin, 40px);
+        padding: clamp(16px, 3vmin, 32px);
+      }
+      .timer-section {
+        width: min(50vmin, 400px);
+        height: min(50vmin, 400px);
+      }
+      .header {
+        width: 100%;
+        text-align: center;
+      }
+      .mode-selector {
+        max-width: 380px;
+      }
+      .settings-panel {
+        max-width: 500px;
+      }
+    }
+
+    /* ========== 响应式：极小屏手机 ========== */
     @media (max-width: 360px) {
-      .timer-section { width: 240px; height: 240px; }
-      .timer-section canvas { width: 240px; height: 240px; }
-      .digit-wheel-container { font-size: 2.2rem; }
-      .mode-btn { padding: 8px 4px; font-size: 0.7rem; min-height: 42px; }
-      .btn-start { width: 60px; height: 60px; font-size: 0.95rem; }
+      .digit-wheel-container { font-size: clamp(1.5rem, 7vmin, 2rem); }
+      .mode-btn { font-size: 0.6rem; min-height: 38px; padding: 4px 2px; }
     }
   </style>
 </head>
@@ -616,7 +667,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
 
     <!-- 计时器圆形区域 -->
     <div class="timer-section" id="timerSection">
-      <canvas id="timerCanvas" width="560" height="560"></canvas>
+      <canvas id="timerCanvas"></canvas>
       <div class="timer-display">
         <div class="digit-wheel-container" id="timeDisplay"></div>
         <div class="timer-mode-label" id="modeLabel">倒计时</div>
@@ -999,18 +1050,34 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
   }
 
   // ==================== Canvas 圆形进度环渲染 ====================
-  // 画布逻辑尺寸 560x560（2x 高清），CSS 显示 280x280
-  const CANVAS_SIZE = 560;
-  const CENTER = CANVAS_SIZE / 2;
-  const OUTER_R = 240;
-  const RING_WIDTH = 28;
+  // 动态尺寸：画布根据 CSS 容器大小 × devicePixelRatio 自动缩放，保证高清
+  let CANVAS_SIZE = 560;
+  let CENTER = 280;
+  let OUTER_R = 240;
+  let RING_WIDTH = 28;
+
+  function resizeCanvas() {
+    const section = timerSection;
+    const cssSize = section.clientWidth;
+    if (!cssSize || cssSize < 10) {
+      // CSS 尚未完成布局，延迟重试
+      requestAnimationFrame(resizeCanvas);
+      return;
+    }
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); // 限制最高 2x 防性能问题
+    CANVAS_SIZE = Math.floor(cssSize * dpr);
+    CENTER = CANVAS_SIZE / 2;
+    OUTER_R = Math.floor(CANVAS_SIZE * 0.428);   // 240/560
+    RING_WIDTH = Math.max(6, Math.floor(CANVAS_SIZE * 0.05)); // 28/560，最小 6px
+    timerCanvas.width = CANVAS_SIZE;
+    timerCanvas.height = CANVAS_SIZE;
+    drawRing(getProgress());
+  }
 
   function drawRing(progress) {
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-    const mode = MODES[state.modeIndex];
     const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#E74C3C';
-    const ringBgColor = getComputedStyle(document.documentElement).getPropertyValue('--ring-bg').trim() || '#e8e0d8';
     const ringTrackColor = getComputedStyle(document.documentElement).getPropertyValue('--ring-track').trim() || '#e0d8d0';
 
     // 绘制背景轨道（完整圆环）
@@ -1022,7 +1089,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     ctx.stroke();
 
     // 绘制进度弧（从 12 点方向顺时针）
-    const startAngle = -Math.PI / 2; // 12 点钟方向
+    const startAngle = -Math.PI / 2;
     const endAngle = startAngle + (Math.PI * 2 * progress);
 
     if (progress > 0.001) {
@@ -1917,6 +1984,16 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     updateModeDisplay();
     updateModeSelector();
     updateDigitInteractivity();
+
+    // 初始化 Canvas 尺寸（在 CSS 布局完成后）
+    resizeCanvas();
+    // 窗口大小变化时重新调整 Canvas
+    let _resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(_resizeTimer);
+      _resizeTimer = setTimeout(() => { resizeCanvas(); updateDigitDisplay(); }, 150);
+    });
+
     drawRing(getProgress());
     updateDigitDisplay();
     document.querySelector('#modeSubtitle').textContent = MODES[state.modeIndex].subtitle;
