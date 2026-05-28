@@ -234,16 +234,110 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
-      pointer-events: none;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .timer-time {
+    /* 数字滚轮容器 */
+    .digit-wheel-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
       font-size: 2.8rem;
       font-weight: 700;
-      letter-spacing: 0.04em;
       font-variant-numeric: tabular-nums;
       font-family: var(--font-family);
       color: var(--text);
       line-height: 1;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .digit-col {
+      position: relative;
+      width: 0.55em;
+      height: 2.4em;
+      overflow: hidden;
+      border-radius: 6px;
+      touch-action: none;
+      cursor: grab;
+    }
+    .digit-col:active { cursor: grabbing; }
+    /* 渐变遮罩使预览数字模糊 */
+    .digit-col::before,
+    .digit-col::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 0.85em;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .digit-col::before {
+      top: 0;
+      background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+    }
+    .digit-col::after {
+      bottom: 0;
+      background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+    }
+    /* 当前数字高亮线 */
+    .digit-col .highlight-line {
+      position: absolute;
+      left: 4px; right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 2px;
+      background: var(--accent);
+      opacity: 0.4;
+      border-radius: 1px;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .digit-strip {
+      position: absolute;
+      left: 0; right: 0;
+      transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+    .digit-strip.dragging { transition: none; }
+    .digit-item {
+      height: 0.8em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      opacity: 0.25;
+      font-weight: 400;
+    }
+    .digit-item.active {
+      opacity: 1;
+      font-weight: 700;
+    }
+    .digit-item.near {
+      opacity: 0.55;
+    }
+    /* 冒号分隔符 */
+    .digit-colon {
+      width: 0.35em;
+      text-align: center;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      padding-bottom: 0.15em;
+      pointer-events: none;
+    }
+    /* 计时中滚轮不可交互 */
+    .digit-wheel-container.readonly .digit-col {
+      pointer-events: none;
+      cursor: default;
+    }
+    .digit-wheel-container.readonly .digit-col::before,
+    .digit-wheel-container.readonly .digit-col::after {
+      opacity: 0.5;
+    }
+    .digit-wheel-container.readonly .highlight-line {
+      opacity: 0.15;
     }
     .timer-mode-label {
       font-size: 0.8rem;
@@ -488,7 +582,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     @media (max-width: 360px) {
       .timer-section { width: 240px; height: 240px; }
       .timer-section canvas { width: 240px; height: 240px; }
-      .timer-time { font-size: 2.2rem; }
+      .digit-wheel-container { font-size: 2.2rem; }
       .mode-btn { padding: 8px 4px; font-size: 0.7rem; min-height: 42px; }
       .btn-start { width: 60px; height: 60px; font-size: 0.95rem; }
     }
@@ -514,7 +608,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     <div class="timer-section" id="timerSection">
       <canvas id="timerCanvas" width="560" height="560"></canvas>
       <div class="timer-display">
-        <div class="timer-time" id="timeDisplay">25:00</div>
+        <div class="digit-wheel-container" id="timeDisplay"></div>
         <div class="timer-mode-label" id="modeLabel">倒计时</div>
       </div>
     </div>
@@ -966,6 +1060,229 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }
 
+  // ==================== 数字滚轮（逐位滑动调节时间） ====================
+  // 5 个数字位置：百位(可隐藏) | 十分位 | 分位 | : | 十秒位 | 秒位
+  const DIGIT_CONFIGS = [
+    { values: [0, 1] },                   // pos 0: 分钟百位 0-1
+    { values: [0,1,2,3,4,5,6,7,8,9] },   // pos 1: 分钟十位 0-9
+    { values: [0,1,2,3,4,5,6,7,8,9] },   // pos 2: 分钟个位 0-9
+    { values: [0,1,2,3,4,5] },           // pos 3: 秒十位 0-5
+    { values: [0,1,2,3,4,5,6,7,8,9] },   // pos 4: 秒个位 0-9
+  ];
+
+  // 将 totalSeconds 分解为各位数字
+  function getTimeDigits(totalSec) {
+    const s = Math.abs(Math.floor(totalSec));
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return {
+      hasHundreds: m >= 100,
+      digits: [
+        Math.floor(m / 100),        // [0] 百位
+        Math.floor((m % 100) / 10), // [1] 十分位
+        m % 10,                     // [2] 分位
+        Math.floor(sec / 10),       // [3] 十秒位
+        sec % 10                    // [4] 秒位
+      ]
+    };
+  }
+
+  // 将数字数组还原为 totalSeconds
+  function digitsToSeconds(digits) {
+    const m = digits[0] * 100 + digits[1] * 10 + digits[2];
+    const s = digits[3] * 10 + digits[4];
+    return m * 60 + s;
+  }
+
+  // 获取数字滚轮容器字号对应的 px 值
+  function wheelEmSize() {
+    return parseFloat(getComputedStyle(timeDisplay).fontSize) || 44.8;
+  }
+
+  // 构建数字滚轮 HTML 结构
+  function buildDigitWheels() {
+    const container = timeDisplay;
+    container.innerHTML = '';
+    const frag = document.createDocumentFragment();
+
+    for (let pos = 0; pos < 5; pos++) {
+      if (pos === 0) {
+        const col = _createDigitCol(pos, true);
+        frag.appendChild(col);
+      } else if (pos === 3) {
+        // 冒号分隔符
+        const colon = document.createElement('span');
+        colon.className = 'digit-colon';
+        colon.textContent = ':';
+        frag.appendChild(colon);
+        frag.appendChild(_createDigitCol(pos, false));
+      } else {
+        frag.appendChild(_createDigitCol(pos, false));
+      }
+    }
+    container.appendChild(frag);
+  }
+
+  function _createDigitCol(pos, isHundreds) {
+    const col = document.createElement('span');
+    col.className = 'digit-col';
+    if (isHundreds) col.classList.add('digit-hundreds');
+    col.dataset.pos = pos;
+
+    const line = document.createElement('span');
+    line.className = 'highlight-line';
+    col.appendChild(line);
+
+    const strip = document.createElement('span');
+    strip.className = 'digit-strip';
+    const cfg = DIGIT_CONFIGS[pos];
+    cfg.values.forEach((v) => {
+      const item = document.createElement('span');
+      item.className = 'digit-item';
+      item.textContent = v;
+      strip.appendChild(item);
+    });
+    col.appendChild(strip);
+
+    // 触摸事件
+    col.addEventListener('touchstart', onDigitTouchStart, { passive: false });
+    col.addEventListener('touchmove', onDigitTouchMove, { passive: false });
+    col.addEventListener('touchend', onDigitTouchEnd);
+    col.addEventListener('touchcancel', onDigitTouchEnd);
+
+    return col;
+  }
+
+  // 计算条带目标位置（em），使 valueIdx 对应的数字居中
+  function _stripTargetEm(valueIdx) {
+    // 容器 2.4em，每项 0.8em，居中项距条带顶部 idx*0.8 + 0.4em
+    // 条带位移 = 容器中心1.2em - 项中心(idx*0.8+0.4)em = (0.8 - idx*0.8)em
+    return (1 - valueIdx) * 0.8;
+  }
+
+  // 定位条带
+  function _positionStrip(strip, valueIdx, extraEm) {
+    const em = _stripTargetEm(valueIdx) + (extraEm || 0);
+    strip.style.transform = 'translateY(' + em + 'em)';
+  }
+
+  // 更新所有数字滚轮显示
+  function updateDigitDisplay() {
+    const td = getTimeDigits(state.remainingSeconds);
+    const container = timeDisplay;
+    const cols = container.querySelectorAll('.digit-col');
+
+    // 显示/隐藏百位
+    const hundredsCol = container.querySelector('.digit-hundreds');
+    if (hundredsCol) {
+      hundredsCol.style.display = td.hasHundreds ? '' : 'none';
+    }
+
+    cols.forEach((col) => {
+      const pos = parseInt(col.dataset.pos);
+      const val = td.digits[pos];
+      const strip = col.querySelector('.digit-strip');
+      const cfg = DIGIT_CONFIGS[pos];
+      const idx = cfg.values.indexOf(val);
+      if (idx < 0) return;
+
+      // 更新 active / near 类
+      const items = strip.querySelectorAll('.digit-item');
+      items.forEach((item, i) => {
+        item.classList.remove('active', 'near');
+        if (i === idx) item.classList.add('active');
+        else if (Math.abs(i - idx) === 1) item.classList.add('near');
+      });
+
+      // 只在非拖拽状态时定位条带
+      if (!col._dragging) {
+        _positionStrip(strip, idx, 0);
+      }
+    });
+  }
+
+  // ==================== 逐位触摸滑动 ====================
+  function onDigitTouchStart(e) {
+    const mode = MODES[state.modeIndex];
+    if (mode.countUp) return;      // 正计时模式不可调节
+    if (state.isRunning) return;   // 运行中不可调节
+    if (e.touches.length > 1) return;
+
+    e.preventDefault();
+    const col = e.currentTarget;
+    col._dragging = true;
+    col._dragStartY = e.touches[0].clientY;
+    col._dragAccum = 0;
+    col._dragStartIdx = _currentDigitIdx(col);
+
+    const strip = col.querySelector('.digit-strip');
+    strip.classList.add('dragging');
+  }
+
+  function onDigitTouchMove(e) {
+    const col = e.currentTarget;
+    if (!col._dragging) return;
+    e.preventDefault();
+
+    const dy = e.touches[0].clientY - col._dragStartY;
+    col._dragAccum = dy;
+
+    const emSize = wheelEmSize();
+    const offsetEm = dy / emSize;
+
+    const strip = col.querySelector('.digit-strip');
+    _positionStrip(strip, col._dragStartIdx, offsetEm);
+  }
+
+  function onDigitTouchEnd(e) {
+    const col = e.currentTarget;
+    if (!col._dragging) return;
+
+    const strip = col.querySelector('.digit-strip');
+    strip.classList.remove('dragging');
+    col._dragging = false;
+
+    const emSize = wheelEmSize();
+    const offsetEm = col._dragAccum / emSize;
+    const totalEm = _stripTargetEm(col._dragStartIdx) + offsetEm;
+
+    // 计算离哪个数字最近
+    const nearestIdx = Math.round((0.8 - totalEm) / 0.8);
+    const cfg = DIGIT_CONFIGS[parseInt(col.dataset.pos)];
+    const clampedIdx = Math.max(0, Math.min(cfg.values.length - 1, nearestIdx));
+    const newValue = cfg.values[clampedIdx];
+
+    // 计算新的 totalSeconds
+    const td = getTimeDigits(state.remainingSeconds);
+    const oldDigits = td.digits.slice();
+    const pos = parseInt(col.dataset.pos);
+    oldDigits[pos] = newValue;
+    const newTotal = digitsToSeconds(oldDigits);
+    const mode = MODES[state.modeIndex];
+
+    // 校验范围
+    const minSec = mode.countUp ? 0 : 1;
+    const maxSec = mode.maxMin > 0 ? mode.maxMin * 60 : 10800;
+    if (newTotal >= minSec && newTotal <= maxSec) {
+      state.remainingSeconds = newTotal;
+      state.totalSeconds = Math.max(state.totalSeconds, state.remainingSeconds);
+    }
+
+    // 刷新显示
+    updateDigitDisplay();
+    drawRing(getProgress());
+    saveState();
+  }
+
+  function _currentDigitIdx(col) {
+    const pos = parseInt(col.dataset.pos);
+    const td = getTimeDigits(state.remainingSeconds);
+    const val = td.digits[pos];
+    const cfg = DIGIT_CONFIGS[pos];
+    const idx = cfg.values.indexOf(val);
+    return idx >= 0 ? idx : 0;
+  }
+
   function updateDisplay() {
     const now = Date.now();
     const mode = MODES[state.modeIndex];
@@ -990,17 +1307,24 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       }
     }
 
-    timeDisplay.textContent = formatTime(state.remainingSeconds);
+    updateDigitDisplay();
     drawRing(getProgress());
     saveState();
   }
 
   function fullRender() {
-    timeDisplay.textContent = formatTime(state.remainingSeconds);
+    updateDigitDisplay();
     drawRing(getProgress());
     updateBtnState();
     updateModeDisplay();
     updateCompletionDisplay();
+    updateDigitInteractivity();
+  }
+
+  function updateDigitInteractivity() {
+    const mode = MODES[state.modeIndex];
+    const readonly = state.isRunning || mode.countUp;
+    timeDisplay.classList.toggle('readonly', readonly);
   }
 
   function onTimerComplete() {
@@ -1111,6 +1435,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       btnStart.textContent = '▶ 开始';
       btnStart.classList.remove('paused');
     }
+    updateDigitInteractivity();
   }
 
   function updateModeDisplay() {
@@ -1298,7 +1623,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     }
 
     // 实时更新显示
-    timeDisplay.textContent = formatTime(state.remainingSeconds);
+    updateDigitDisplay();
     drawRing(getProgress());
   }
 
@@ -1358,7 +1683,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
       }
       swipeStartY = e.touches[0].clientY;
       swipeAccumulatedY = 0;
-      timeDisplay.textContent = formatTime(state.remainingSeconds);
+      updateDigitDisplay();
       drawRing(getProgress());
     }
   }
@@ -1539,13 +1864,15 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     document.querySelector('meta[name="theme-color"]').setAttribute('content', accent);
 
     // 构建 UI
+    buildDigitWheels();
     buildModeSelector();
     buildSettings();
     updateBtnState();
     updateModeDisplay();
     updateModeSelector();
+    updateDigitInteractivity();
     drawRing(getProgress());
-    timeDisplay.textContent = formatTime(state.remainingSeconds);
+    updateDigitDisplay();
     document.querySelector('#modeSubtitle').textContent = MODES[state.modeIndex].subtitle;
 
     // 注册 Service Worker
