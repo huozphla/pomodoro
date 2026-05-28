@@ -292,19 +292,6 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     .digit-col.scrolling::after {
       opacity: 1;
     }
-    /* 当前数字高亮线 */
-    .digit-col .highlight-line {
-      position: absolute;
-      left: 4px; right: 4px;
-      top: 50%;
-      transform: translateY(-50%);
-      height: 2px;
-      background: var(--accent);
-      opacity: 0.4;
-      border-radius: 1px;
-      z-index: 1;
-      pointer-events: none;
-    }
     .digit-strip {
       position: absolute;
       left: 0; right: 0;
@@ -347,9 +334,6 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     .digit-wheel-container.readonly .digit-col::before,
     .digit-wheel-container.readonly .digit-col::after {
       opacity: 0.5;
-    }
-    .digit-wheel-container.readonly .highlight-line {
-      opacity: 0.15;
     }
     .timer-mode-label {
       font-size: 0.8rem;
@@ -1205,10 +1189,6 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     col.className = 'digit-col';
     if (isHundreds) col.classList.add('digit-hundreds');
     col.dataset.pos = pos;
-
-    const line = document.createElement('span');
-    line.className = 'highlight-line';
-    col.appendChild(line);
 
     const strip = document.createElement('span');
     strip.className = 'digit-strip';
