@@ -1,0 +1,1605 @@
+<!--
+将本文件保存为 index.html，上传至 GitHub Pages 仓库，即可获得永久链接
+https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务器。
+
+部署步骤：
+1. 在 GitHub 创建一个新的公开仓库（如 pomodoro）
+2. 将本文件保存为 index.html 并上传到仓库根目录
+3. 进入仓库 Settings > Pages，选择 main 分支作为源，保存
+4. 等待几分钟后，你的永久链接即为 https://你的用户名.github.io/pomodoro
+5. 也可部署到 Netlify：直接将本文件拖入 Netlify Drop 即可获得链接
+6. 也可部署到 Vercel、Cloudflare Pages 等任意静态托管服务
+
+示例永久链接：https://你的用户名.github.io/pomodoro.html
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#E74C3C">
+  <meta name="apple-mobile-web-app-title" content="灵动番茄钟">
+  <title>灵动番茄钟</title>
+  <link rel="manifest" id="manifest-link">
+  <script>
+    // 立即设置 Manifest（在浏览器尝试抓取之前）
+    (function() {
+      var m = {
+        name: '灵动番茄钟', short_name: '番茄钟',
+        description: '一款优雅的番茄钟 PWA 应用',
+        start_url: './', display: 'standalone', orientation: 'portrait',
+        background_color: '#fdf2f2', theme_color: '#E74C3C',
+        icons: [{
+          src: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192"><rect width="192" height="192" rx="38" fill="#E74C3C"/><text x="96" y="128" text-anchor="middle" font-size="100">🍅</text></svg>'),
+          sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable'
+        }, {
+          src: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" rx="100" fill="#E74C3C"/><text x="256" y="350" text-anchor="middle" font-size="280">🍅</text></svg>'),
+          sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable'
+        }]
+      };
+      var b = new Blob([JSON.stringify(m)], { type: 'application/json' });
+      document.querySelector('#manifest-link').href = URL.createObjectURL(b);
+    })();
+  </script>
+  <style>
+    /* ========== CSS 变量与主题系统 ========== */
+    :root {
+      --font-size: 16px;
+      --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --bg: #f8f4f0;
+      --card-bg: #ffffff;
+      --text: #2c2c2c;
+      --text-secondary: #999999;
+      --accent: #E74C3C;
+      --accent-light: #fde8e8;
+      --accent-dark: #c0392b;
+      --ring-bg: #e8e0d8;
+      --ring-track: #e0d8d0;
+      --btn-bg: #f0ece8;
+      --btn-text: #555555;
+      --btn-active-bg: #E74C3C;
+      --btn-active-text: #ffffff;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+      --border: #e8e0d8;
+      --mode-btn-bg: #f5f2ed;
+      --mode-btn-active-bg: #ffffff;
+      --mode-btn-active-border: var(--accent);
+      --toast-bg: #333333;
+      --toast-text: #ffffff;
+      --switch-bg: #d0d0d0;
+      --slider-track: #e0d8d0;
+      --slider-fill: #E74C3C;
+      --canvas-bg: transparent;
+      --header-bg: rgba(255,255,255,0.85);
+      --settings-bg: #ffffff;
+    }
+
+    /* 经典红（默认）*/
+    body.theme-classic-red {
+      --bg: #fdf2f2; --card-bg: #ffffff; --text: #2c2c2c; --text-secondary: #999;
+      --accent: #E74C3C; --accent-light: #fde8e8; --accent-dark: #c0392b;
+      --ring-bg: #f0d0d0; --ring-track: #f5e6e6; --btn-bg: #fdf2f2;
+      --btn-active-bg: #E74C3C; --btn-active-text: #fff; --mode-btn-bg: #fdf2f2;
+      --mode-btn-active-border: #E74C3C; --slider-fill: #E74C3C; --border: #f0d0d0;
+    }
+
+    /* 森林绿 */
+    body.theme-forest-green {
+      --bg: #f0f7f2; --card-bg: #ffffff; --text: #2c3e2c; --text-secondary: #8a9a8a;
+      --accent: #27AE60; --accent-light: #e8f8e8; --accent-dark: #1e8449;
+      --ring-bg: #c8e6c9; --ring-track: #e8f0e8; --btn-bg: #f0f7f2;
+      --btn-active-bg: #27AE60; --btn-active-text: #fff; --mode-btn-bg: #f0f7f2;
+      --mode-btn-active-border: #27AE60; --slider-fill: #27AE60; --border: #c8e6c9;
+    }
+
+    /* 海洋蓝 */
+    body.theme-ocean-blue {
+      --bg: #f0f5fa; --card-bg: #ffffff; --text: #2c3848; --text-secondary: #8a96a6;
+      --accent: #2980B9; --accent-light: #e8f0f8; --accent-dark: #1a5276;
+      --ring-bg: #b8d4ec; --ring-track: #e0eaf2; --btn-bg: #f0f5fa;
+      --btn-active-bg: #2980B9; --btn-active-text: #fff; --mode-btn-bg: #f0f5fa;
+      --mode-btn-active-border: #2980B9; --slider-fill: #2980B9; --border: #b8d4ec;
+    }
+
+    /* 暗夜黑 */
+    body.theme-dark-night {
+      --bg: #1a1a2e; --card-bg: #16213e; --text: #e0e0e0; --text-secondary: #8899aa;
+      --accent: #BB86FC; --accent-light: #2a2040; --accent-dark: #9b6bdb;
+      --ring-bg: #2a2a4a; --ring-track: #1e2a40; --btn-bg: #2a2a4a;
+      --btn-active-bg: #BB86FC; --btn-active-text: #1a1a2e; --mode-btn-bg: #2a2a4a;
+      --mode-btn-active-bg: #3a3a5a; --mode-btn-active-border: #BB86FC;
+      --slider-fill: #BB86FC; --border: #2a2a4a; --shadow: 0 2px 12px rgba(0,0,0,0.3);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.5); --toast-bg: #BB86FC; --toast-text: #1a1a2e;
+      --switch-bg: #444; --settings-bg: #16213e; --header-bg: rgba(22,33,62,0.9);
+    }
+
+    /* 简约白 */
+    body.theme-simple-white {
+      --bg: #ffffff; --card-bg: #fafafa; --text: #1a1a1a; --text-secondary: #aaaaaa;
+      --accent: #333333; --accent-light: #f0f0f0; --accent-dark: #000000;
+      --ring-bg: #e8e8e8; --ring-track: #f0f0f0; --btn-bg: #f5f5f5;
+      --btn-active-bg: #333333; --btn-active-text: #fff; --mode-btn-bg: #f5f5f5;
+      --mode-btn-active-border: #333333; --slider-fill: #333333; --border: #e0e0e0;
+    }
+
+    /* ========== 全局样式 ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      font-size: var(--font-size);
+      font-family: var(--font-family);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      height: 100%;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      transition: background 0.4s ease, color 0.4s ease;
+      overflow-x: hidden;
+    }
+
+    /* 深色模式自动适配 */
+    @media (prefers-color-scheme: dark) {
+      body.theme-classic-red, body.theme-forest-green, body.theme-ocean-blue, body.theme-simple-white {
+        --bg: #1a1a1a; --card-bg: #2a2a2a; --text: #e8e8e8; --text-secondary: #999;
+        --ring-bg: #3a3a3a; --ring-track: #333333; --btn-bg: #3a3a3a; --mode-btn-bg: #3a3a3a;
+        --mode-btn-active-bg: #4a4a4a; --border: #3a3a3a; --shadow: 0 2px 12px rgba(0,0,0,0.4);
+        --settings-bg: #2a2a2a; --header-bg: rgba(42,42,42,0.9);
+      }
+    }
+
+    body.font-serif { --font-family: Georgia, 'Times New Roman', '宋体', serif; }
+    body.font-handwriting { --font-family: 'Comic Sans MS', 'KaiTi', '楷体', cursive; }
+    body.font-mono { --font-family: 'Courier New', 'SF Mono', 'Consolas', '等线', monospace; }
+
+    /* ========== 主容器 ========== */
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 16px 20px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* ========== 永久链接栏 ========== */
+    .link-bar {
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: center;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      word-break: break-all;
+      display: none;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+    }
+    .link-bar.show { display: flex; }
+    .link-bar:active { opacity: 0.7; transform: scale(0.98); }
+    .link-bar .copy-icon { margin-left: 8px; font-size: 1rem; }
+
+    /* ========== 头部 ========== */
+    .header {
+      text-align: center;
+      width: 100%;
+    }
+    .header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text);
+    }
+    .header .subtitle {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* ========== 计时器圆形区域 ========== */
+    .timer-section {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      flex-shrink: 0;
+    }
+    .timer-section canvas {
+      width: 280px;
+      height: 280px;
+      display: block;
+    }
+    .timer-display {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    }
+    .timer-time {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+      font-family: var(--font-family);
+      color: var(--text);
+      line-height: 1;
+    }
+    .timer-mode-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ========== 模式选择器 ========== */
+    .mode-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+    .mode-btn {
+      position: relative;
+      padding: 10px 6px;
+      border-radius: 14px;
+      border: 2px solid transparent;
+      background: var(--mode-btn-bg);
+      color: var(--text);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      min-height: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mode-btn:active { transform: scale(0.95); }
+    .mode-btn .mode-icon { font-size: 1.2rem; line-height: 1; }
+    .mode-btn .mode-default-time { font-size: 0.65rem; color: var(--text-secondary); }
+    .mode-btn.active {
+      background: var(--mode-btn-active-bg);
+      border-color: var(--mode-btn-active-border);
+      box-shadow: var(--shadow);
+      font-weight: 700;
+    }
+
+    /* ========== 控制按钮 ========== */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .btn-start {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: none;
+      background: var(--btn-active-bg);
+      color: var(--btn-active-text);
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-lg);
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-start:active { transform: scale(0.9); }
+    .btn-start.paused { background: var(--accent-dark); }
+    .btn-reset {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--btn-bg);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-reset:active { transform: scale(0.9); background: var(--border); }
+
+    /* ========== 完成计数 ========== */
+    .completion-counter {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    .completion-counter strong { color: var(--accent); font-size: 1.1rem; }
+
+    /* ========== 设置面板 ========== */
+    .settings-toggle {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: var(--btn-bg);
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .settings-toggle:active { transform: rotate(60deg); }
+
+    .settings-panel {
+      width: 100%;
+      background: var(--settings-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .settings-panel.open { display: flex; }
+
+    .setting-group { display: flex; flex-direction: column; gap: 8px; }
+    .setting-group label {
+      font-size: 0.8rem; font-weight: 600; color: var(--text);
+    }
+    .setting-group .options {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .setting-group .option-btn {
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 2px solid var(--border);
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 0.75rem;
+      cursor: pointer;
+      min-height: 44px;
+      min-width: 44px;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .setting-group .option-btn:active { transform: scale(0.93); }
+    .setting-group .option-btn.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      font-weight: 700;
+    }
+
+    /* 颜色预览圆点 */
+    .color-dot {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+      border: 2px solid rgba(0,0,0,0.1);
+      vertical-align: middle;
+    }
+
+    /* 字体大小滑块 */
+    .font-size-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 8px;
+      border-radius: 4px;
+      background: var(--slider-track);
+      outline: none;
+      cursor: pointer;
+    }
+    .font-size-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--slider-fill);
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: var(--shadow);
+    }
+    .font-size-value {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: right;
+    }
+
+    /* 获取永久链接按钮 */
+    .btn-permalink {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 2px solid var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 44px;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+    }
+    .btn-permalink:active { transform: scale(0.97); opacity: 0.8; }
+
+    /* ========== Toast 提示 ========== */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+      width: calc(100% - 40px);
+      max-width: 440px;
+    }
+    .toast {
+      background: var(--toast-bg);
+      color: var(--toast-text);
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-lg);
+      pointer-events: auto;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ========== 部署指引（本地文件时显示） ========== */
+    .deploy-guide {
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      display: none;
+      text-align: center;
+    }
+    .deploy-guide.show { display: block; }
+    .deploy-guide strong { color: var(--accent); }
+
+    /* ========== 响应式微调 ========== */
+    @media (max-width: 360px) {
+      .timer-section { width: 240px; height: 240px; }
+      .timer-section canvas { width: 240px; height: 240px; }
+      .timer-time { font-size: 2.2rem; }
+      .mode-btn { padding: 8px 4px; font-size: 0.7rem; min-height: 42px; }
+      .btn-start { width: 60px; height: 60px; font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body class="theme-classic-red" id="appBody">
+  <div class="app-container">
+    <!-- Toast 容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 永久链接栏 -->
+    <div class="link-bar" id="linkBar" title="点击复制链接">
+      <span id="linkText"></span><span class="copy-icon">📋</span>
+    </div>
+
+    <!-- 标题 -->
+    <div class="header">
+      <h1>🍅 灵动番茄钟</h1>
+      <p class="subtitle" id="modeSubtitle">专注此刻</p>
+    </div>
+
+    <!-- 计时器圆形区域 -->
+    <div class="timer-section" id="timerSection">
+      <canvas id="timerCanvas" width="560" height="560"></canvas>
+      <div class="timer-display">
+        <div class="timer-time" id="timeDisplay">25:00</div>
+        <div class="timer-mode-label" id="modeLabel">倒计时</div>
+      </div>
+    </div>
+
+    <!-- 模式选择器 -->
+    <div class="mode-selector" id="modeSelector"></div>
+
+    <!-- 控制按钮 -->
+    <div class="controls">
+      <button class="btn-reset" id="btnReset" title="重置">↺</button>
+      <button class="btn-start" id="btnStart" title="开始">▶ 开始</button>
+      <button class="settings-toggle" id="btnSettings" title="设置">⚙</button>
+    </div>
+
+    <!-- 今日完成计数 -->
+    <div class="completion-counter" id="completionCounter">
+      今日完成：<strong>0</strong> 次
+    </div>
+
+    <!-- 设置面板 -->
+    <div class="settings-panel" id="settingsPanel">
+      <div class="setting-group">
+        <label>🎨 主题风格</label>
+        <div class="options" id="themeOptions"></div>
+      </div>
+      <div class="setting-group">
+        <label>🔤 字体风格</label>
+        <div class="options" id="fontOptions"></div>
+      </div>
+      <div class="setting-group">
+        <label>📐 字体大小 (<span id="fontSizeLabel">16</span>px)</label>
+        <input type="range" min="14" max="24" value="16" class="font-size-slider" id="fontSizeSlider">
+      </div>
+      <button class="btn-permalink" id="btnPermalink">🔗 获取永久链接</button>
+    </div>
+
+    <!-- 部署指引（本地文件时显示） -->
+    <div class="deploy-guide" id="deployGuide">
+      <strong>💡 部署提示</strong><br>
+      当前为本地文件。将本文件上传至 <strong>GitHub Pages</strong>、<strong>Netlify</strong> 或任意静态服务器，<br>
+      即可获得可分享的 <strong>永久链接</strong>。<br>
+      详细部署步骤请查看 HTML 文件顶部注释。
+    </div>
+  </div>
+
+  <script>
+  /* ===================================================================
+   * 灵动番茄钟 - 完整 PWA 单文件实现
+   * =================================================================== */
+
+  // ==================== Service Worker 代码（通过 Blob URL 注册） ====================
+  const SW_CODE = `
+    let timerEndTime = null;
+    let timerId = null;
+    let currentMode = '';
+
+    self.addEventListener('message', (event) => {
+      const { type, remainingSeconds, mode } = event.data;
+      if (type === 'timer-update') {
+        if (timerId) { clearTimeout(timerId); timerId = null; }
+        currentMode = mode || '';
+        if (remainingSeconds <= 0) {
+          sendNotification();
+        } else {
+          timerEndTime = Date.now() + remainingSeconds * 1000;
+          timerId = setTimeout(() => { sendNotification(); }, remainingSeconds * 1000 + 500);
+        }
+      } else if (type === 'timer-cancel') {
+        if (timerId) { clearTimeout(timerId); timerId = null; }
+        timerEndTime = null;
+      } else if (type === 'get-remaining') {
+        // 返回剩余时间用于同步
+        const remaining = timerEndTime ? Math.max(0, Math.round((timerEndTime - Date.now()) / 1000)) : 0;
+        event.ports[0] && event.ports[0].postMessage({ remainingSeconds: remaining, mode: currentMode });
+      }
+    });
+
+    function sendNotification() {
+      const modeText = currentMode ? ' - ' + currentMode : '';
+      self.registration.showNotification('番茄钟', {
+        body: (currentMode || '计时') + ' 时间到！',
+        icon: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192"><rect width="192" height="192" rx="38" fill="#E74C3C"/><text x="96" y="120" text-anchor="middle" font-size="96">🍅</text></svg>'),
+        badge: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72"><rect width="72" height="72" rx="14" fill="#E74C3C"/><text x="36" y="48" text-anchor="middle" font-size="40">🍅</text></svg>'),
+        vibrate: [200, 100, 200],
+        tag: 'pomodoro-notification',
+        renotify: true,
+        requireInteraction: true
+      });
+    }
+
+    // 离线缓存
+    const CACHE_NAME = 'pomodoro-cache-v2';
+    self.addEventListener('install', (event) => {
+      event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+          return cache.addAll(['./', './index.html', '/']).catch(() => {});
+        })
+      );
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', (event) => {
+      event.waitUntil(
+        caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      );
+      event.waitUntil(clients.claim());
+    });
+    self.addEventListener('fetch', (event) => {
+      if (event.request.method !== 'GET') return;
+      event.respondWith(
+        caches.match(event.request).then((cached) => {
+          return cached || fetch(event.request).then((resp) => {
+            if (resp && resp.status === 200) {
+              const clone = resp.clone();
+              caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+            }
+            return resp;
+          }).catch(() => cached || new Response('Offline', { status: 503 }));
+        })
+      );
+    });
+  `;
+
+  // ==================== 应用配置 ====================
+  const MODES = [
+    { id: 'countdown',  name: '倒计时',   icon: '🍅', defaultMin: 25, maxMin: 180, countUp: false, subtitle: '专注此刻' },
+    { id: 'stopwatch',  name: '计时',     icon: '⏱', defaultMin: 0,  maxMin: 0,   countUp: true,  subtitle: '记录时长' },
+    { id: 'study',      name: '学习',     icon: '📚', defaultMin: 25, maxMin: 180, countUp: false, subtitle: '好好学习' },
+    { id: 'exercise',   name: '运动',     icon: '🏃', defaultMin: 30, maxMin: 180, countUp: false, subtitle: '坚持锻炼' },
+    { id: 'break',      name: '休息',     icon: '☕', defaultMin: 5,  maxMin: 180, countUp: false, subtitle: '放松一下' },
+    { id: 'entertain',  name: '娱乐',     icon: '🎮', defaultMin: 0,  maxMin: 0,   countUp: true,  subtitle: '适度娱乐' },
+  ];
+
+  const THEMES = [
+    { id: 'classic-red',    name: '经典红', color: '#E74C3C' },
+    { id: 'forest-green',   name: '森林绿', color: '#27AE60' },
+    { id: 'ocean-blue',     name: '海洋蓝', color: '#2980B9' },
+    { id: 'dark-night',     name: '暗夜黑', color: '#BB86FC' },
+    { id: 'simple-white',   name: '简约白', color: '#333333' },
+  ];
+
+  const FONTS = [
+    { id: '',             name: '系统默认' },
+    { id: 'font-serif',      name: '衬线体' },
+    { id: 'font-handwriting', name: '手写体' },
+    { id: 'font-mono',        name: '等宽体' },
+  ];
+
+  // ==================== DOM 引用 ====================
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
+
+  const appBody = $('#appBody');
+  const timerCanvas = $('#timerCanvas');
+  const ctx = timerCanvas.getContext('2d');
+  const timeDisplay = $('#timeDisplay');
+  const modeLabel = $('#modeLabel');
+  const modeSelector = $('#modeSelector');
+  const btnStart = $('#btnStart');
+  const btnReset = $('#btnReset');
+  const btnSettings = $('#btnSettings');
+  const settingsPanel = $('#settingsPanel');
+  const toastContainer = $('#toastContainer');
+  const linkBar = $('#linkBar');
+  const linkText = $('#linkText');
+  const deployGuide = $('#deployGuide');
+  const fontSizeSlider = $('#fontSizeSlider');
+  const fontSizeLabel = $('#fontSizeLabel');
+  const completionEl = $('#completionCounter');
+
+  // ==================== 应用状态 ====================
+  const STATE_KEY = 'pomodoro_app_state';
+  const TODAY_KEY = 'pomodoro_today';
+
+  let state = {
+    modeIndex: 0,
+    totalSeconds: 25 * 60,       // 当前总时长（倒计时模式的目标时长，单位秒）
+    remainingSeconds: 25 * 60,   // 剩余秒数（倒计时）/ 已过秒数（正计时）
+    isRunning: false,
+    theme: 'classic-red',
+    fontClass: '',
+    fontSize: 16,
+    endTime: null,               // 倒计时模式结束时间戳
+    startTime: null,             // 正计时模式开始时间戳
+    savedElapsed: 0,             // 正计时模式中暂停时保存的已过秒数
+  };
+  let completedWhileAway = false; // 标记页面关闭期间定时器是否到期
+
+  // ==================== 持久化存储 ====================
+  function saveState() {
+    const data = {
+      modeIndex: state.modeIndex,
+      totalSeconds: state.totalSeconds,
+      remainingSeconds: state.remainingSeconds,
+      isRunning: state.isRunning,
+      theme: state.theme,
+      fontClass: state.fontClass,
+      fontSize: state.fontSize,
+      endTime: state.endTime,
+      startTime: state.startTime,
+      savedElapsed: state.savedElapsed,
+      savedAt: Date.now(),
+    };
+    localStorage.setItem(STATE_KEY, JSON.stringify(data));
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STATE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      state.modeIndex = data.modeIndex ?? 0;
+      state.totalSeconds = data.totalSeconds ?? 25 * 60;
+      state.remainingSeconds = data.remainingSeconds ?? 25 * 60;
+      state.isRunning = !!data.isRunning;
+      state.theme = data.theme || 'classic-red';
+      state.fontClass = data.fontClass || '';
+      state.fontSize = data.fontSize || 16;
+      state.endTime = data.endTime || null;
+      state.startTime = data.startTime || null;
+      state.savedElapsed = data.savedElapsed || 0;
+      // 如果之前正在运行，根据时间戳校准
+      if (state.isRunning) {
+        const mode = MODES[state.modeIndex];
+        if (mode.countUp) {
+          // 正计时：计算从 startTime 到现在的增量
+          if (state.startTime) {
+            const elapsed = state.savedElapsed + Math.max(0, (Date.now() - state.startTime) / 1000);
+            state.remainingSeconds = Math.floor(elapsed);
+          }
+        } else {
+          // 倒计时：计算剩余时间
+          if (state.endTime) {
+            const remaining = Math.max(0, (state.endTime - Date.now()) / 1000);
+            state.remainingSeconds = Math.max(0, Math.ceil(remaining));
+            if (state.remainingSeconds <= 0) {
+              // 时间已在后台结束，标记以便初始化时触发完成逻辑
+              completedWhileAway = true;
+              state.isRunning = false;
+              state.remainingSeconds = 0;
+              state.endTime = null;
+            }
+          }
+        }
+      }
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // 今日完成计数
+  function getTodayKey() { return new Date().toISOString().slice(0, 10); }
+
+  function getTodayCount() {
+    try {
+      const data = JSON.parse(localStorage.getItem(TODAY_KEY) || '{}');
+      if (data.date === getTodayKey()) return data.count || 0;
+    } catch (e) {}
+    return 0;
+  }
+
+  function incrementTodayCount() {
+    const date = getTodayKey();
+    const data = { date, count: getTodayCount() + 1 };
+    localStorage.setItem(TODAY_KEY, JSON.stringify(data));
+    updateCompletionDisplay();
+  }
+
+  function updateCompletionDisplay() {
+    const count = getTodayCount();
+    completionEl.innerHTML = '今日完成：<strong>' + count + '</strong> 次';
+  }
+
+  // ==================== Toast 提示 ====================
+  function showToast(msg, duration = 2500) {
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    toastContainer.appendChild(el);
+    requestAnimationFrame(() => { el.classList.add('show'); });
+    setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 300);
+    }, duration);
+  }
+
+  // ==================== Service Worker 管理 ====================
+  let swRegistration = null;
+
+  async function registerSW() {
+    if (!('serviceWorker' in navigator)) {
+      console.log('[番茄钟] Service Worker 不受支持，后台通知功能不可用');
+      return;
+    }
+    try {
+      const blob = new Blob([SW_CODE], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(blob);
+      swRegistration = await navigator.serviceWorker.register(swUrl, { scope: './' });
+      console.log('[番茄钟] Service Worker 已注册');
+      // 监听来自 SW 的消息
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'notification-shown') {
+          playNotificationSound();
+        }
+      });
+    } catch (err) {
+      console.warn('[番茄钟] Service Worker 注册失败:', err.message);
+      swRegistration = null;
+    }
+  }
+
+  function sendToSW(type, remainingSeconds, modeName) {
+    if (!swRegistration || !swRegistration.active) return;
+    swRegistration.active.postMessage({
+      type: type,
+      remainingSeconds: remainingSeconds,
+      mode: modeName,
+    });
+  }
+
+  // ==================== Wake Lock 管理 ====================
+  let wakeLock = null;
+
+  async function requestWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    if (!state.isRunning) return;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } catch (e) { /* 用户拒绝或浏览器不支持 */ }
+  }
+
+  async function releaseWakeLock() {
+    if (wakeLock) {
+      try { await wakeLock.release(); } catch (e) {}
+      wakeLock = null;
+    }
+  }
+
+  // 页面可见性变化时重新获取 Wake Lock
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible' && state.isRunning && !wakeLock) {
+      await requestWakeLock();
+    }
+  });
+
+  // ==================== 通知与音频 ====================
+  function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }
+
+  function showLocalNotification() {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const mode = MODES[state.modeIndex];
+      new Notification('番茄钟', { body: mode.name + ' 时间到！', icon: '🍅', tag: 'pomodoro' });
+    }
+  }
+
+  function playNotificationSound() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const audioCtx = new AudioCtx();
+      // 双音调清脆提示音
+      [0, 0.15].forEach((delay, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(i === 0 ? 880 : 1100, audioCtx.currentTime + delay);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + 0.4);
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + 0.4);
+      });
+    } catch (e) { /* 静默处理 */ }
+  }
+
+  // ==================== Canvas 圆形进度环渲染 ====================
+  // 画布逻辑尺寸 560x560（2x 高清），CSS 显示 280x280
+  const CANVAS_SIZE = 560;
+  const CENTER = CANVAS_SIZE / 2;
+  const OUTER_R = 240;
+  const RING_WIDTH = 28;
+
+  function drawRing(progress) {
+    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+    const mode = MODES[state.modeIndex];
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#E74C3C';
+    const ringBgColor = getComputedStyle(document.documentElement).getPropertyValue('--ring-bg').trim() || '#e8e0d8';
+    const ringTrackColor = getComputedStyle(document.documentElement).getPropertyValue('--ring-track').trim() || '#e0d8d0';
+
+    // 绘制背景轨道（完整圆环）
+    ctx.beginPath();
+    ctx.arc(CENTER, CENTER, OUTER_R, 0, Math.PI * 2);
+    ctx.strokeStyle = ringTrackColor;
+    ctx.lineWidth = RING_WIDTH;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // 绘制进度弧（从 12 点方向顺时针）
+    const startAngle = -Math.PI / 2; // 12 点钟方向
+    const endAngle = startAngle + (Math.PI * 2 * progress);
+
+    if (progress > 0.001) {
+      ctx.beginPath();
+      ctx.arc(CENTER, CENTER, OUTER_R, startAngle, endAngle);
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = RING_WIDTH;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    // 进度弧末端小圆点装饰
+    if (progress > 0.01) {
+      const dotX = CENTER + OUTER_R * Math.cos(endAngle);
+      const dotY = CENTER + OUTER_R * Math.sin(endAngle);
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, RING_WIDTH / 2, 0, Math.PI * 2);
+      ctx.fillStyle = accentColor;
+      ctx.fill();
+    }
+  }
+
+  function getProgress() {
+    const mode = MODES[state.modeIndex];
+    if (mode.countUp) {
+      // 正计时：从 0 到无限，进度超过一圈时回绕
+      const totalForOneLap = Math.max(state.totalSeconds || 60, 60);
+      return (state.remainingSeconds % totalForOneLap) / totalForOneLap;
+    } else {
+      if (state.totalSeconds <= 0) return 0;
+      return state.remainingSeconds / state.totalSeconds;
+    }
+  }
+
+  // ==================== 计时器逻辑 ====================
+  let timerInterval = null;
+  let animFrameId = null;
+  let lastUiUpdate = 0;
+  let lastSwUpdate = 0;
+
+  function formatTime(totalSec) {
+    const sec = Math.max(0, Math.floor(totalSec));
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+
+  function updateDisplay() {
+    const now = Date.now();
+    const mode = MODES[state.modeIndex];
+
+    if (state.isRunning) {
+      if (mode.countUp) {
+        // 正计时：从 startTime 累计
+        state.remainingSeconds = state.savedElapsed + Math.floor((now - state.startTime) / 1000);
+      } else {
+        // 倒计时：计算剩余时间
+        const remaining = Math.max(0, (state.endTime - now) / 1000);
+        const prevRemaining = state.remainingSeconds;
+        state.remainingSeconds = Math.max(0, Math.ceil(remaining));
+        // 倒计时归零
+        if (state.remainingSeconds <= 0 && prevRemaining > 0) {
+          // 计时结束
+          state.isRunning = false;
+          state.remainingSeconds = 0;
+          state.endTime = null;
+          onTimerComplete();
+        }
+      }
+    }
+
+    timeDisplay.textContent = formatTime(state.remainingSeconds);
+    drawRing(getProgress());
+    saveState();
+  }
+
+  function fullRender() {
+    timeDisplay.textContent = formatTime(state.remainingSeconds);
+    drawRing(getProgress());
+    updateBtnState();
+    updateModeDisplay();
+    updateCompletionDisplay();
+  }
+
+  function onTimerComplete() {
+    playNotificationSound();
+    showLocalNotification();
+    sendToSW('timer-cancel', 0, '');
+    const mode = MODES[state.modeIndex];
+    if (!mode.countUp) {
+      incrementTodayCount();
+    }
+    fullRender();
+    releaseWakeLock();
+    showToast(mode.name + ' 时间到！🎉', 3000);
+  }
+
+  function startTimer() {
+    if (state.isRunning) return;
+    const mode = MODES[state.modeIndex];
+
+    if (mode.countUp) {
+      // 正计时：记录开始时间
+      if (!state.startTime) {
+        state.startTime = Date.now();
+        state.savedElapsed = state.remainingSeconds;
+      }
+      state.startTime = Date.now() - (state.savedElapsed * 1000);
+      state.endTime = null;
+    } else {
+      // 倒计时：计算结束时间
+      if (state.remainingSeconds <= 0) return;
+      state.endTime = Date.now() + state.remainingSeconds * 1000;
+      state.startTime = null;
+    }
+
+    state.isRunning = true;
+    saveState();
+    updateBtnState();
+    requestWakeLock();
+
+    // SW 同步
+    if (!mode.countUp && state.remainingSeconds > 0) {
+      sendToSW('timer-update', state.remainingSeconds, mode.name);
+      lastSwUpdate = Date.now();
+    }
+  }
+
+  function pauseTimer() {
+    if (!state.isRunning) return;
+    const mode = MODES[state.modeIndex];
+
+    // 先做一次最新时间更新
+    if (mode.countUp) {
+      state.savedElapsed = state.savedElapsed + Math.floor((Date.now() - state.startTime) / 1000);
+      state.remainingSeconds = state.savedElapsed;
+      state.startTime = null;
+    } else {
+      state.remainingSeconds = Math.max(0, Math.ceil((state.endTime - Date.now()) / 1000));
+      state.endTime = null;
+    }
+
+    state.isRunning = false;
+    saveState();
+    updateBtnState();
+    releaseWakeLock();
+    sendToSW('timer-cancel', 0, '');
+  }
+
+  function resetTimer() {
+    const wasRunning = state.isRunning;
+    if (state.isRunning) { pauseTimer(); }
+    const mode = MODES[state.modeIndex];
+    state.totalSeconds = mode.defaultMin * 60;
+    state.remainingSeconds = state.totalSeconds;
+    state.endTime = null;
+    state.startTime = null;
+    state.savedElapsed = 0;
+    state.isRunning = false;
+    fullRender();
+    saveState();
+    releaseWakeLock();
+    sendToSW('timer-cancel', 0, '');
+  }
+
+  function switchMode(index) {
+    if (state.isRunning) { pauseTimer(); }
+    state.modeIndex = index;
+    const mode = MODES[index];
+    state.totalSeconds = mode.defaultMin * 60;
+    state.remainingSeconds = state.totalSeconds;
+    state.endTime = null;
+    state.startTime = null;
+    state.savedElapsed = 0;
+    state.isRunning = false;
+    fullRender();
+    updateModeSelector();
+    document.querySelector('#modeSubtitle').textContent = mode.subtitle;
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
+    saveState();
+    releaseWakeLock();
+    sendToSW('timer-cancel', 0, '');
+  }
+
+  function updateBtnState() {
+    if (state.isRunning) {
+      btnStart.textContent = '⏸ 暂停';
+      btnStart.classList.add('paused');
+    } else {
+      btnStart.textContent = '▶ 开始';
+      btnStart.classList.remove('paused');
+    }
+  }
+
+  function updateModeDisplay() {
+    const mode = MODES[state.modeIndex];
+    modeLabel.textContent = mode.name;
+    document.querySelector('#modeSubtitle').textContent = mode.subtitle;
+  }
+
+  // ==================== 模式选择器渲染 ====================
+  function buildModeSelector() {
+    modeSelector.innerHTML = '';
+    MODES.forEach((mode, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'mode-btn' + (i === state.modeIndex ? ' active' : '');
+      btn.innerHTML = '<span class="mode-icon">' + mode.icon + '</span>' + mode.name +
+        '<span class="mode-default-time">' + (mode.countUp ? '∞' : mode.defaultMin + '分') + '</span>';
+      btn.addEventListener('click', () => switchMode(i));
+      btn.style.minHeight = '48px';
+      modeSelector.appendChild(btn);
+    });
+  }
+
+  function updateModeSelector() {
+    const btns = modeSelector.querySelectorAll('.mode-btn');
+    btns.forEach((btn, i) => {
+      btn.classList.toggle('active', i === state.modeIndex);
+    });
+  }
+
+  // ==================== 设置面板渲染 ====================
+  function buildSettings() {
+    // 主题选项
+    const themeOpts = $('#themeOptions');
+    themeOpts.innerHTML = '';
+    THEMES.forEach((t) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn' + (state.theme === t.id ? ' selected' : '');
+      btn.innerHTML = '<span class="color-dot" style="background:' + t.color + '"></span>' + t.name;
+      btn.addEventListener('click', () => setTheme(t.id));
+      themeOpts.appendChild(btn);
+    });
+
+    // 字体选项
+    const fontOpts = $('#fontOptions');
+    fontOpts.innerHTML = '';
+    FONTS.forEach((f) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn' + (state.fontClass === f.id ? ' selected' : '');
+      btn.textContent = f.name;
+      btn.addEventListener('click', () => setFont(f.id));
+      fontOpts.appendChild(btn);
+    });
+
+    // 字体大小滑块
+    fontSizeSlider.value = state.fontSize;
+    fontSizeLabel.textContent = state.fontSize;
+    fontSizeSlider.addEventListener('input', () => {
+      const val = parseInt(fontSizeSlider.value);
+      fontSizeLabel.textContent = val;
+      setFontSize(val);
+    });
+  }
+
+  function refreshSettingsUI() {
+    // 更新主题选中状态
+    const themeBtns = $$('#themeOptions .option-btn');
+    themeBtns.forEach((btn, i) => {
+      btn.classList.toggle('selected', THEMES[i].id === state.theme);
+    });
+    // 更新字体选中状态
+    const fontBtns = $$('#fontOptions .option-btn');
+    fontBtns.forEach((btn, i) => {
+      btn.classList.toggle('selected', FONTS[i].id === state.fontClass);
+    });
+    fontSizeSlider.value = state.fontSize;
+    fontSizeLabel.textContent = state.fontSize;
+  }
+
+  function setTheme(themeId) {
+    // 移除所有主题类名
+    THEMES.forEach(t => appBody.classList.remove('theme-' + t.id));
+    appBody.classList.add('theme-' + themeId);
+    state.theme = themeId;
+    refreshSettingsUI();
+    saveState();
+    // 更新 theme-color meta
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', accent);
+    drawRing(getProgress());
+  }
+
+  function setFont(fontId) {
+    FONTS.forEach(f => {
+      if (f.id) appBody.classList.remove(f.id);
+    });
+    if (fontId) appBody.classList.add(fontId);
+    state.fontClass = fontId;
+    refreshSettingsUI();
+    saveState();
+  }
+
+  function setFontSize(size) {
+    state.fontSize = size;
+    document.documentElement.style.setProperty('--font-size', size + 'px');
+    fontSizeLabel.textContent = size;
+    saveState();
+  }
+
+  // ==================== 圆形触摸滑动调节时间 ====================
+  let touchActive = false;
+  let accumulatedAngle = 0;
+  let lastTouchAngle = null;
+  let touchStartTime = null;
+  const ANGLE_THRESHOLD = 30; // 每 30 度变化 = 1 分钟
+
+  function getTouchAngle(e) {
+    const rect = timerCanvas.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const touch = e.touches[0];
+    const dx = touch.clientX - cx;
+    const dy = touch.clientY - cy;
+    return Math.atan2(dy, dx) * (180 / Math.PI);
+  }
+
+  function isTouchNearRing(e) {
+    const rect = timerCanvas.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const touch = e.touches[0];
+    const dx = touch.clientX - cx;
+    const dy = touch.clientY - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    // 判断手指是否在圆环区域附近（圆心到外圈半径的 40%-110% 区间）
+    const outerR = rect.width / 2;
+    return dist >= outerR * 0.25 && dist <= outerR * 1.15;
+  }
+
+  function onTimerTouchStart(e) {
+    const mode = MODES[state.modeIndex];
+    // 正计时模式不支持通过圆环调节时间
+    if (mode.countUp) return;
+    if (state.isRunning) return; // 运行中不可调节
+    if (e.touches.length > 1) return; // 多指忽略
+
+    if (!isTouchNearRing(e)) return;
+    e.preventDefault();
+    touchActive = true;
+    accumulatedAngle = 0;
+    lastTouchAngle = getTouchAngle(e);
+    touchStartTime = Date.now();
+  }
+
+  function onTimerTouchMove(e) {
+    if (!touchActive) return;
+    e.preventDefault();
+    const currentAngle = getTouchAngle(e);
+    if (lastTouchAngle === null) { lastTouchAngle = currentAngle; return; }
+
+    // 计算角度差，处理 180° 交叉边界
+    let delta = currentAngle - lastTouchAngle;
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+
+    accumulatedAngle += delta;
+    lastTouchAngle = currentAngle;
+
+    // 每超过阈值，调整 1 分钟
+    const mode = MODES[state.modeIndex];
+    while (accumulatedAngle >= ANGLE_THRESHOLD) {
+      accumulatedAngle -= ANGLE_THRESHOLD;
+      // 顺时针：增加时间
+      if (state.remainingSeconds / 60 < mode.maxMin) {
+        state.remainingSeconds += 60;
+        state.totalSeconds = Math.max(state.totalSeconds, state.remainingSeconds);
+      }
+    }
+    while (accumulatedAngle <= -ANGLE_THRESHOLD) {
+      accumulatedAngle += ANGLE_THRESHOLD;
+      // 逆时针：减少时间
+      if (state.remainingSeconds / 60 > 1) {
+        state.remainingSeconds -= 60;
+        state.totalSeconds = state.remainingSeconds;
+      }
+    }
+
+    // 实时更新显示
+    timeDisplay.textContent = formatTime(state.remainingSeconds);
+    drawRing(getProgress());
+  }
+
+  function onTimerTouchEnd(e) {
+    if (!touchActive) return;
+    touchActive = false;
+    accumulatedAngle = 0;
+    lastTouchAngle = null;
+    // 保存当前设置的时间
+    state.totalSeconds = state.remainingSeconds;
+    saveState();
+  }
+
+  timerCanvas.addEventListener('touchstart', onTimerTouchStart, { passive: false });
+  timerCanvas.addEventListener('touchmove', onTimerTouchMove, { passive: false });
+  timerCanvas.addEventListener('touchend', onTimerTouchEnd);
+  timerCanvas.addEventListener('touchcancel', onTimerTouchEnd);
+
+  // ==================== 垂直滑动调节（学习/运动/休息模式的额外方式） ====================
+  let swipeActive = false;
+  let swipeStartY = 0;
+  let swipeAccumulatedY = 0;
+  const SWIPE_THRESHOLD = 40; // 每 40px = 1 分钟
+
+  function onSwipeStart(e) {
+    const mode = MODES[state.modeIndex];
+    if (mode.countUp) return;
+    if (state.isRunning) return;
+    if (e.touches.length > 1) return;
+    // 圆环区域触摸已处理，此处在中央区域的垂直滑动
+    if (isTouchNearRing(e)) return; // 圆环区域由 onTimerTouchStart 处理
+    swipeActive = true;
+    swipeStartY = e.touches[0].clientY;
+    swipeAccumulatedY = 0;
+  }
+
+  function onSwipeMove(e) {
+    if (!swipeActive) return;
+    const dy = swipeStartY - e.touches[0].clientY; // 向上滑动 dy > 0
+    swipeAccumulatedY = dy;
+    const mode = MODES[state.modeIndex];
+    // 计算调整量
+    let adjustment = Math.floor(Math.abs(swipeAccumulatedY) / SWIPE_THRESHOLD);
+    if (adjustment > 0) {
+      if (swipeAccumulatedY > 0) {
+        // 向上滑动：增加时间
+        if (state.remainingSeconds / 60 < mode.maxMin) {
+          state.remainingSeconds = Math.min(state.remainingSeconds + adjustment * 60, mode.maxMin * 60);
+          state.totalSeconds = Math.max(state.totalSeconds, state.remainingSeconds);
+        }
+      } else {
+        // 向下滑动：减少时间
+        if (state.remainingSeconds / 60 > 1) {
+          state.remainingSeconds = Math.max(state.remainingSeconds - adjustment * 60, 60);
+          state.totalSeconds = state.remainingSeconds;
+        }
+      }
+      swipeStartY = e.touches[0].clientY;
+      swipeAccumulatedY = 0;
+      timeDisplay.textContent = formatTime(state.remainingSeconds);
+      drawRing(getProgress());
+    }
+  }
+
+  function onSwipeEnd(e) {
+    if (!swipeActive) return;
+    swipeActive = false;
+    swipeAccumulatedY = 0;
+    state.totalSeconds = state.remainingSeconds;
+    saveState();
+  }
+
+  timerCanvas.addEventListener('touchstart', (e) => {
+    // 如果不在圆环区域，尝试作为垂直滑动处理
+    if (!touchActive) onSwipeStart(e);
+  }, { passive: false });
+
+  timerCanvas.addEventListener('touchmove', (e) => {
+    if (!touchActive) onSwipeMove(e);
+  }, { passive: false });
+
+  timerCanvas.addEventListener('touchend', (e) => {
+    onSwipeEnd(e);
+  });
+
+  // ==================== 按钮事件 ====================
+  btnStart.addEventListener('click', () => {
+    if (state.isRunning) { pauseTimer(); } else {
+      // 开始前检查：倒计时模式剩余时间为 0 时重置
+      const mode = MODES[state.modeIndex];
+      if (!mode.countUp && state.remainingSeconds <= 0) {
+        state.remainingSeconds = state.totalSeconds || mode.defaultMin * 60;
+      }
+      startTimer();
+    }
+    fullRender();
+  });
+
+  btnReset.addEventListener('click', () => { resetTimer(); });
+
+  btnSettings.addEventListener('click', () => {
+    settingsPanel.classList.toggle('open');
+    if (settingsPanel.classList.contains('open')) {
+      refreshSettingsUI();
+    }
+  });
+
+  // 获取永久链接按钮
+  $('#btnPermalink').addEventListener('click', () => {
+    const url = window.location.href;
+    if (isLocalEnv()) {
+      showToast('请先将文件部署到服务器以获取永久链接', 3000);
+    } else {
+      copyToClipboard(url);
+    }
+  });
+
+  // 永久链接栏点击复制
+  linkBar.addEventListener('click', () => {
+    const url = window.location.href;
+    if (!isLocalEnv()) { copyToClipboard(url); }
+  });
+
+  // ==================== 页面可见性优化 ====================
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      // 隐藏时降低 UI 更新频率（通过不主动更新动画帧即可）
+      // SW 通信仍按 2 秒间隔进行
+    } else {
+      // 恢复可见时立即刷新
+      if (state.isRunning) {
+        const mode = MODES[state.modeIndex];
+        if (mode.countUp) {
+          state.remainingSeconds = state.savedElapsed + Math.floor((Date.now() - state.startTime) / 1000);
+        } else {
+          state.remainingSeconds = Math.max(0, Math.ceil((state.endTime - Date.now()) / 1000));
+          if (state.remainingSeconds <= 0 && state.isRunning) {
+            state.isRunning = false;
+            state.remainingSeconds = 0;
+            state.endTime = null;
+            onTimerComplete();
+          }
+        }
+      }
+      fullRender();
+    }
+  });
+
+  // ==================== 主循环（requestAnimationFrame） ====================
+  function mainLoop(timestamp) {
+    animFrameId = requestAnimationFrame(mainLoop);
+    const now = Date.now();
+
+    // UI 刷新频率控制
+    const visible = document.visibilityState === 'visible';
+    const uiInterval = visible ? 200 : 1000; // 可见 200ms，隐藏 1s
+
+    if (state.isRunning && now - lastUiUpdate > uiInterval) {
+      lastUiUpdate = now;
+      updateDisplay();
+    }
+
+    // SW 通信：每 2 秒发送一次状态
+    if (state.isRunning && !MODES[state.modeIndex].countUp && now - lastSwUpdate > 2000) {
+      lastSwUpdate = now;
+      sendToSW('timer-update', state.remainingSeconds, MODES[state.modeIndex].name);
+    }
+  }
+
+  // ==================== 永久链接检测 ====================
+  function isLocalEnv() {
+    const url = window.location.href;
+    return url.startsWith('file://') || url.includes('localhost') || url.includes('127.0.0.1');
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('🔗 永久链接已复制，可分享给好友', 3000);
+      }).catch(() => {
+        fallbackCopy(text);
+      });
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('🔗 永久链接已复制，可分享给好友', 3000); }
+    catch (e) { showToast('复制失败，请手动复制浏览器地址栏链接', 3000); }
+    document.body.removeChild(ta);
+  }
+
+  function checkPermanentLink() {
+    if (isLocalEnv()) {
+      console.log('[番茄钟] 当前为本地文件。部署后可获得永久链接。请查看 HTML 顶部注释了解部署步骤。');
+      deployGuide.classList.add('show');
+      linkBar.classList.remove('show');
+    } else {
+      const url = window.location.href;
+      linkText.textContent = url;
+      linkBar.classList.add('show');
+      deployGuide.classList.remove('show');
+      // 首次加载自动复制
+      const hasVisited = sessionStorage.getItem('pomodoro_link_shown');
+      if (!hasVisited) {
+        sessionStorage.setItem('pomodoro_link_shown', '1');
+        setTimeout(() => { copyToClipboard(url); }, 800);
+      }
+    }
+  }
+
+  // ==================== 初始化 ====================
+  async function init() {
+    // 加载持久化状态
+    const hasSaved = loadState();
+    if (!hasSaved) {
+      state.modeIndex = 0;
+      state.totalSeconds = 25 * 60;
+      state.remainingSeconds = 25 * 60;
+    }
+
+    // 应用主题和字体
+    appBody.className = 'theme-' + state.theme;
+    if (state.fontClass) appBody.classList.add(state.fontClass);
+    document.documentElement.style.setProperty('--font-size', state.fontSize + 'px');
+    fontSizeSlider.value = state.fontSize;
+    fontSizeLabel.textContent = state.fontSize;
+    updateCompletionDisplay();
+
+    // 更新 theme-color
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', accent);
+
+    // 构建 UI
+    buildModeSelector();
+    buildSettings();
+    updateBtnState();
+    updateModeDisplay();
+    updateModeSelector();
+    drawRing(getProgress());
+    timeDisplay.textContent = formatTime(state.remainingSeconds);
+    document.querySelector('#modeSubtitle').textContent = MODES[state.modeIndex].subtitle;
+
+    // 注册 Service Worker
+    await registerSW();
+
+    // 检测永久链接
+    checkPermanentLink();
+
+    // 请求通知权限
+    requestNotificationPermission();
+
+    // 如果之前正在运行，重新启动计时器和 SW 同步
+    if (state.isRunning) {
+      const mode = MODES[state.modeIndex];
+      if (mode.countUp) {
+        state.startTime = Date.now() - (state.savedElapsed * 1000);
+      } else {
+        if (state.remainingSeconds > 0) {
+          state.endTime = Date.now() + state.remainingSeconds * 1000;
+          sendToSW('timer-update', state.remainingSeconds, mode.name);
+          lastSwUpdate = Date.now();
+          requestWakeLock();
+        } else {
+          state.isRunning = false;
+          state.endTime = null;
+        }
+      }
+      saveState();
+      updateBtnState();
+    }
+
+    // 处理页面关闭期间定时器到期的情况
+    if (completedWhileAway) {
+      const mode = MODES[state.modeIndex];
+      if (!mode.countUp) {
+        incrementTodayCount();
+        showLocalNotification();
+        showToast(mode.name + ' 时间到！🎉', 3000);
+      }
+      completedWhileAway = false;
+    }
+
+    // 启动主循环
+    lastUiUpdate = Date.now();
+    animFrameId = requestAnimationFrame(mainLoop);
+
+    console.log('[番茄钟] 初始化完成');
+    console.log('[番茄钟] 当前模式:', MODES[state.modeIndex].name);
+    console.log('[番茄钟] 计时状态:', state.isRunning ? '运行中' : '已暂停');
+    console.log('[番茄钟] Service Worker:', swRegistration ? '已激活' : '未注册');
+  }
+
+  // 启动应用
+  init();
+  </script>
+</body>
+</html>
