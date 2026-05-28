@@ -782,11 +782,11 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
 
   // ==================== 应用配置 ====================
   const MODES = [
-    { id: 'countdown',  name: '倒计时',   icon: '🍅', defaultMin: 25, maxMin: 180, countUp: false, subtitle: '专注此刻' },
+    { id: 'countdown',  name: '倒计时',   icon: '🍅', defaultMin: 25, maxMin: 540, countUp: false, subtitle: '专注此刻' },
     { id: 'stopwatch',  name: '计时',     icon: '⏱', defaultMin: 0,  maxMin: 0,   countUp: true,  subtitle: '记录时长' },
-    { id: 'study',      name: '学习',     icon: '📚', defaultMin: 25, maxMin: 180, countUp: false, subtitle: '好好学习' },
-    { id: 'exercise',   name: '运动',     icon: '🏃', defaultMin: 30, maxMin: 180, countUp: false, subtitle: '坚持锻炼' },
-    { id: 'break',      name: '休息',     icon: '☕', defaultMin: 5,  maxMin: 180, countUp: false, subtitle: '放松一下' },
+    { id: 'study',      name: '学习',     icon: '📚', defaultMin: 25, maxMin: 540, countUp: false, subtitle: '好好学习' },
+    { id: 'exercise',   name: '运动',     icon: '🏃', defaultMin: 30, maxMin: 540, countUp: false, subtitle: '坚持锻炼' },
+    { id: 'break',      name: '休息',     icon: '☕', defaultMin: 5,  maxMin: 540, countUp: false, subtitle: '放松一下' },
     { id: 'entertain',  name: '娱乐',     icon: '🎮', defaultMin: 0,  maxMin: 0,   countUp: true,  subtitle: '适度娱乐' },
   ];
 
@@ -1126,37 +1126,38 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
   }
 
   // ==================== 数字滚轮（逐位滑动调节时间） ====================
-  // 5 个数字位置：百位(可隐藏) | 十分位 | 分位 | : | 十秒位 | 秒位
+  // 7 个可视元素：时 | : | 分十位 | 分个位 | : | 秒十位 | 秒个位
   const DIGIT_CONFIGS = [
-    { values: [0, 1] },                   // pos 0: 分钟百位 0-1
-    { values: [0,1,2,3,4,5,6,7,8,9] },   // pos 1: 分钟十位 0-9
+    { values: [0,1,2,3,4,5,6,7,8,9] },   // pos 0: 小时 0-9
+    { values: [0,1,2,3,4,5] },            // pos 1: 分钟十位 0-5
     { values: [0,1,2,3,4,5,6,7,8,9] },   // pos 2: 分钟个位 0-9
-    { values: [0,1,2,3,4,5] },           // pos 3: 秒十位 0-5
+    { values: [0,1,2,3,4,5] },            // pos 3: 秒十位 0-5
     { values: [0,1,2,3,4,5,6,7,8,9] },   // pos 4: 秒个位 0-9
   ];
 
-  // 将 totalSeconds 分解为各位数字
+  // 将 totalSeconds 分解为各位数字（H:MM:SS）
   function getTimeDigits(totalSec) {
     const s = Math.abs(Math.floor(totalSec));
-    const m = Math.floor(s / 60);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
     const sec = s % 60;
     return {
-      hasHundreds: m >= 100,
       digits: [
-        Math.floor(m / 100),        // [0] 百位
-        Math.floor((m % 100) / 10), // [1] 十分位
-        m % 10,                     // [2] 分位
-        Math.floor(sec / 10),       // [3] 十秒位
-        sec % 10                    // [4] 秒位
+        h,                           // [0] 小时
+        Math.floor(m / 10),          // [1] 分十位
+        m % 10,                      // [2] 分个位
+        Math.floor(sec / 10),        // [3] 秒十位
+        sec % 10                     // [4] 秒个位
       ]
     };
   }
 
   // 将数字数组还原为 totalSeconds
   function digitsToSeconds(digits) {
-    const m = digits[0] * 100 + digits[1] * 10 + digits[2];
+    const h = digits[0];
+    const m = digits[1] * 10 + digits[2];
     const s = digits[3] * 10 + digits[4];
-    return m * 60 + s;
+    return h * 3600 + m * 60 + s;
   }
 
   // 获取数字滚轮容器字号对应的 px 值
@@ -1164,34 +1165,34 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
     return parseFloat(getComputedStyle(timeDisplay).fontSize) || 44.8;
   }
 
-  // 构建数字滚轮 HTML 结构
+  // 构建数字滚轮 HTML 结构（H:MM:SS）
   function buildDigitWheels() {
     const container = timeDisplay;
     container.innerHTML = '';
     const frag = document.createDocumentFragment();
 
     for (let pos = 0; pos < 5; pos++) {
-      if (pos === 0) {
-        const col = _createDigitCol(pos, true);
-        frag.appendChild(col);
-      } else if (pos === 3) {
-        // 冒号分隔符
+      if (pos === 1) {
+        // 冒号在小时和分钟之间
         const colon = document.createElement('span');
         colon.className = 'digit-colon';
         colon.textContent = ':';
         frag.appendChild(colon);
-        frag.appendChild(_createDigitCol(pos, false));
-      } else {
-        frag.appendChild(_createDigitCol(pos, false));
+      } else if (pos === 3) {
+        // 冒号在分钟和秒之间
+        const colon = document.createElement('span');
+        colon.className = 'digit-colon';
+        colon.textContent = ':';
+        frag.appendChild(colon);
       }
+      frag.appendChild(_createDigitCol(pos));
     }
     container.appendChild(frag);
   }
 
-  function _createDigitCol(pos, isHundreds) {
+  function _createDigitCol(pos) {
     const col = document.createElement('span');
     col.className = 'digit-col';
-    if (isHundreds) col.classList.add('digit-hundreds');
     col.dataset.pos = pos;
 
     const strip = document.createElement('span');
@@ -1230,14 +1231,7 @@ https://你的用户名.github.io/番茄钟 。或者部署到任何静态服务
   // 更新所有数字滚轮显示
   function updateDigitDisplay() {
     const td = getTimeDigits(state.remainingSeconds);
-    const container = timeDisplay;
-    const cols = container.querySelectorAll('.digit-col');
-
-    // 显示/隐藏百位
-    const hundredsCol = container.querySelector('.digit-hundreds');
-    if (hundredsCol) {
-      hundredsCol.style.display = td.hasHundreds ? '' : 'none';
-    }
+    const cols = timeDisplay.querySelectorAll('.digit-col');
 
     cols.forEach((col) => {
       const pos = parseInt(col.dataset.pos);
